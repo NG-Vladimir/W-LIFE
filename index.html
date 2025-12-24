@@ -8,11 +8,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#080808">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3844/3844724.png">
-
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #080808; color: white; -webkit-tap-highlight-color: transparent; }
@@ -28,95 +27,217 @@
         .dot { width: 3px; height: 3px; background: #8B5CF6; border-radius: 50%; position: absolute; bottom: 6px; }
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Для аккордов */
+        .chords-text { font-family: 'JetBrains Mono', monospace; white-space: pre; overflow-x: auto; font-size: 14px; line-height: 1.6; color: #a1a1aa; }
+        .chord { color: #8B5CF6; font-weight: bold; }
     </style>
 </head>
-<body class="pb-32">
+<body class="pb-36">
 
-    <div class="max-w-md mx-auto px-8 pt-12">
-        <div id="view-home" class="fade-in">
-            <header class="mb-12">
-                <h1 class="text-xl font-thin-text tracking-[0.4em] uppercase text-white/90">WORSHIP<span class="text-purple-500 italic"> — </span>LIFE</h1>
-            </header>
-
+    <div class="max-w-md mx-auto px-8 pt-12 text-white">
+        
+        <div id="view-home" class="view-content fade-in">
+            <header class="mb-12"><h1 class="text-xl font-thin-text tracking-[0.4em] uppercase">WORSHIP<span class="text-purple-500 italic"> — </span>LIFE</h1></header>
             <div class="flex p-1 bg-white/5 rounded-2xl mb-12 border border-white/5 text-[10px] font-light-text tracking-[0.2em] uppercase">
                 <button onclick="selectQuickDay(2)" id="quick-tue" class="flex-1 py-4 rounded-xl transition-all text-white/40">Вторник</button>
                 <button onclick="selectQuickDay(0)" id="quick-sun" class="flex-1 py-4 rounded-xl transition-all text-white/40">Воскресенье</button>
             </div>
-
             <div class="mb-10">
-                <h2 id="display-date" class="text-5xl font-thin-text tracking-tighter text-white leading-tight">Дата</h2>
+                <h2 id="display-date" class="text-5xl font-thin-text tracking-tighter leading-tight">Дата</h2>
                 <p id="display-weekday" class="text-purple-500 text-[10px] font-semibold uppercase tracking-[0.5em] mt-3 opacity-80">День недели</p>
             </div>
-
             <div id="roles-list" class="space-y-4"></div>
         </div>
 
-        <div id="view-plan" class="hidden fade-in">
-            <h2 class="text-4xl font-thin-text mb-8 tracking-tighter uppercase">График</h2>
+        <div id="view-plan" class="view-content hidden fade-in">
+            <h2 class="text-4xl font-thin-text mb-8 tracking-tighter uppercase italic">График</h2>
             <div class="glass-card p-6 rounded-[32px] mb-8">
                 <div class="flex justify-between items-center mb-8">
-                    <button onclick="changeMonth(-1)" class="p-2"><i data-lucide="chevron-left" class="w-5 h-5 text-purple-500"></i></button>
-                    <span id="calendar-month-year" class="text-xs font-semibold uppercase tracking-[0.3em] text-white"></span>
-                    <button onclick="changeMonth(1)" class="p-2"><i data-lucide="chevron-right" class="w-5 h-5 text-purple-500"></i></button>
+                    <button onclick="changeMonth(-1)"><i data-lucide="chevron-left" class="w-5 h-5 text-purple-500"></i></button>
+                    <span id="calendar-month-year" class="text-xs font-semibold uppercase tracking-[0.3em]"></span>
+                    <button onclick="changeMonth(1)"><i data-lucide="chevron-right" class="w-5 h-5 text-purple-500"></i></button>
                 </div>
                 <div class="calendar-grid text-[9px] font-semibold text-white/20 mb-4 uppercase text-center tracking-widest">
                     <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
                 </div>
                 <div id="calendar-body" class="calendar-grid"></div>
             </div>
-            <div id="stats-list" class="space-y-4 px-2"></div>
+            <div id="stats-list" class="space-y-4"></div>
         </div>
 
-        <div id="view-settings" class="hidden fade-in">
-            <h2 class="text-4xl font-thin-text mb-8 tracking-tighter uppercase">Команда</h2>
+        <div id="view-songs" class="view-content hidden fade-in">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-4xl font-thin-text tracking-tighter uppercase italic">Песни</h2>
+                <button onclick="openSongEditor()" class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center"><i data-lucide="plus" class="w-5 h-5"></i></button>
+            </div>
+            <div id="songs-list" class="space-y-3"></div>
+        </div>
+
+        <div id="view-settings" class="view-content hidden fade-in">
+            <h2 class="text-4xl font-thin-text mb-8 tracking-tighter uppercase italic">Команда</h2>
             <div class="glass-card p-6 rounded-[30px] mb-8">
-                <input type="text" id="new-name" placeholder="Имя Фамилия" class="bg-transparent w-full p-2 text-xl font-light-text text-white mb-6 outline-none border-b border-white/10 focus:border-purple-500 transition-all">
-                <button onclick="addPerson()" class="w-full py-4 text-[10px] font-semibold uppercase tracking-[0.3em] text-purple-400 border border-purple-500/30 rounded-xl active:bg-purple-500 active:text-white transition-all">Добавить в базу</button>
+                <input type="text" id="new-name" placeholder="Имя Фамилия" class="bg-transparent w-full p-2 text-xl font-light-text text-white mb-6 outline-none border-b border-white/10 focus:border-purple-500">
+                <button onclick="addPerson()" class="w-full py-4 text-[10px] font-semibold uppercase tracking-[0.3em] text-purple-400 border border-purple-500/30 rounded-xl">Добавить</button>
             </div>
             <div id="team-list" class="space-y-3"></div>
         </div>
     </div>
 
-    <div id="selection-modal" class="fixed inset-0 z-[100] modal-bg flex items-end hidden">
+    <div id="selection-modal" class="fixed inset-0 z-[100] modal-bg flex items-end hidden bg-black/90 backdrop-blur-md">
         <div class="w-full max-w-md mx-auto bg-[#080808] rounded-t-[40px] p-10 border-t border-white/5 shadow-2xl">
-            <div class="w-10 h-0.5 bg-white/10 mx-auto mb-10"></div>
             <div id="modal-people-list" class="space-y-2 max-h-[50vh] overflow-y-auto"></div>
-            <button onclick="assignPerson(null)" class="w-full mt-8 p-4 text-[10px] font-semibold uppercase tracking-widest text-red-400/50">Удалить из роли</button>
-            <button onclick="closeModal()" class="w-full mt-2 p-4 text-[10px] font-semibold uppercase tracking-widest text-white/20">Закрыть</button>
+            <button onclick="closeModal()" class="w-full mt-6 p-4 text-[10px] font-semibold uppercase tracking-widest text-white/20">Закрыть</button>
+        </div>
+    </div>
+
+    <div id="song-modal" class="fixed inset-0 z-[110] bg-[#080808] hidden overflow-y-auto p-8">
+        <div class="max-w-md mx-auto">
+            <button onclick="closeSongModal()" class="mb-8 text-white/40 flex items-center gap-2 uppercase text-[10px] tracking-widest"><i data-lucide="arrow-left" class="w-4 h-4"></i> Назад</button>
+            <input type="text" id="song-title" placeholder="Название песни" class="bg-transparent w-full text-3xl font-thin-text mb-2 outline-none">
+            <input type="text" id="song-author" placeholder="Автор" class="bg-transparent w-full text-sm font-light text-purple-500 mb-8 outline-none uppercase tracking-widest">
+            
+            <p class="text-[9px] uppercase tracking-widest text-white/20 mb-2">Текст и аккорды</p>
+            <textarea id="song-content" placeholder="Вставьте текст с аккордами..." class="chords-text w-full h-[50vh] bg-white/5 rounded-2xl p-6 outline-none focus:border-purple-500 border border-transparent"></textarea>
+            
+            <button onclick="saveSong()" class="w-full mt-8 py-5 bg-purple-600 rounded-2xl font-semibold uppercase text-[10px] tracking-[0.3em]">Сохранить песню</button>
+            <button id="delete-song-btn" class="w-full mt-4 py-3 text-red-500/50 text-[10px] uppercase font-semibold">Удалить из базы</button>
+        </div>
+    </div>
+
+    <div id="view-song-modal" class="fixed inset-0 z-[120] bg-[#080808] hidden overflow-y-auto p-8">
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-between items-start mb-10">
+                <button onclick="closeViewSongModal()" class="text-white/40"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <button id="edit-song-btn" class="text-purple-500 text-[10px] font-bold uppercase tracking-widest">Править</button>
+            </div>
+            <h2 id="v-song-title" class="text-4xl font-thin-text mb-2 leading-tight"></h2>
+            <p id="v-song-author" class="text-purple-500 text-xs font-semibold uppercase tracking-[0.2em] mb-10"></p>
+            <div id="v-song-content" class="chords-text pb-20"></div>
         </div>
     </div>
 
     <div class="fixed bottom-10 left-8 right-8 glass-card rounded-[35px] p-3 flex justify-around items-center z-50">
         <button onclick="switchView('home')" id="nav-home" class="p-4 transition-all"><i data-lucide="layers"></i></button>
         <button onclick="switchView('plan')" id="nav-plan" class="p-4 transition-all"><i data-lucide="calendar"></i></button>
-        <button onclick="switchView('settings')" id="nav-settings" class="p-4 transition-all"><i data-lucide="user-plus"></i></button>
+        <button onclick="switchView('songs')" id="nav-songs" class="p-4 transition-all"><i data-lucide="music-2"></i></button>
+        <button onclick="switchView('settings')" id="nav-settings" class="p-4 transition-all"><i data-lucide="users"></i></button>
     </div>
 
     <script>
-        let team = JSON.parse(localStorage.getItem('wl_v8_team')) || [];
-        let assignments = JSON.parse(localStorage.getItem('wl_v8_assigns')) || {};
+        // ДАННЫЕ
+        let team = JSON.parse(localStorage.getItem('wl_v9_team')) || [];
+        let assignments = JSON.parse(localStorage.getItem('wl_v9_assigns')) || {};
+        let songs = JSON.parse(localStorage.getItem('wl_v9_songs')) || [];
+        
         let calendarDate = new Date();
         let selectedDateStr = "";
+        let currentEditingSongId = null;
 
         const mainRoles = ["Ведущий", "Фоно", "Барабаны", "Гитара"];
         const backVocalRoles = ["Бэк-вокал 1", "Бэк-вокал 2", "Бэк-вокал 3", "Бэк-вокал 4"];
 
         function initApp() {
             lucide.createIcons();
-            // По умолчанию выбираем ближайший Вт или Вс
             const today = new Date();
             const day = today.getDay();
             selectQuickDay(day === 0 || day > 2 ? 0 : 2);
             switchView('home');
         }
 
-        function selectQuickDay(targetDayNum) {
+        // --- ЛОГИКА ПЕСЕН ---
+        function renderSongs() {
+            const list = document.getElementById('songs-list');
+            list.innerHTML = '';
+            songs.sort((a,b) => a.title.localeCompare(b.title)).forEach(song => {
+                const div = document.createElement('div');
+                div.className = "p-6 glass-card rounded-[24px] flex justify-between items-center active:scale-95 transition-all";
+                div.onclick = () => viewSong(song.id);
+                div.innerHTML = `
+                    <div>
+                        <h4 class="text-lg font-light-text">${song.title}</h4>
+                        <p class="text-[9px] text-white/30 uppercase tracking-widest mt-1">${song.author || 'Автор не указан'}</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-white/10"></i>
+                `;
+                list.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function openSongEditor(id = null) {
+            currentEditingSongId = id;
+            const song = songs.find(s => s.id === id) || { title: '', author: '', content: '' };
+            document.getElementById('song-title').value = song.title;
+            document.getElementById('song-author').value = song.author;
+            document.getElementById('song-content').value = song.content;
+            document.getElementById('delete-song-btn').onclick = () => deleteSong(id);
+            document.getElementById('delete-song-btn').style.display = id ? 'block' : 'none';
+            document.getElementById('song-modal').classList.remove('hidden');
+        }
+
+        function saveSong() {
+            const title = document.getElementById('song-title').value.trim();
+            if (!title) return alert('Нужно название');
+            const songData = {
+                id: currentEditingSongId || Date.now(),
+                title,
+                author: document.getElementById('song-author').value.trim(),
+                content: document.getElementById('song-content').value
+            };
+            if (currentEditingSongId) {
+                songs = songs.map(s => s.id === currentEditingSongId ? songData : s);
+            } else {
+                songs.push(songData);
+            }
+            localStorage.setItem('wl_v9_songs', JSON.stringify(songs));
+            closeSongModal();
+            renderSongs();
+        }
+
+        function viewSong(id) {
+            const song = songs.find(s => s.id === id);
+            document.getElementById('v-song-title').innerText = song.title;
+            document.getElementById('v-song-author').innerText = song.author;
+            document.getElementById('v-song-content').innerText = song.content;
+            document.getElementById('edit-song-btn').onclick = () => { closeViewSongModal(); openSongEditor(id); };
+            document.getElementById('view-song-modal').classList.remove('hidden');
+        }
+
+        function deleteSong(id) {
+            if (confirm('Удалить песню из базы?')) {
+                songs = songs.filter(s => s.id !== id);
+                localStorage.setItem('wl_v9_songs', JSON.stringify(songs));
+                closeSongModal();
+                renderSongs();
+            }
+        }
+
+        function closeSongModal() { document.getElementById('song-modal').classList.add('hidden'); }
+        function closeViewSongModal() { document.getElementById('view-song-modal').classList.add('hidden'); }
+
+        // --- ОСТАЛЬНАЯ ЛОГИКА ---
+        function switchView(view) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
+            document.querySelectorAll('nav button, .fixed.bottom-10 button').forEach(n => {
+                n.className = `p-4 transition-all text-white/20`;
+            });
+            document.getElementById('nav-' + view).className = `p-4 transition-all text-purple-500 scale-110`;
+            
+            if(view === 'home') renderSchedule();
+            if(view === 'plan') renderCalendar();
+            if(view === 'songs') renderSongs();
+            if(view === 'settings') renderTeamBase();
+            lucide.createIcons();
+        }
+
+        // (Функции календаря и расписания из предыдущей версии)
+        function selectQuickDay(dayNum) {
             const now = new Date();
-            let diff = targetDayNum - now.getDay();
+            let diff = dayNum - now.getDay();
             if (diff < 0) diff += 7;
             const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
-            
-            // Баг фикс: создаем строку даты вручную, чтобы избежать проблем с таймзоной
             selectedDateStr = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
             renderSchedule();
         }
@@ -124,20 +245,15 @@
         function renderSchedule() {
             const parts = selectedDateStr.split('-');
             const d = new Date(parts[0], parts[1] - 1, parts[2]);
-            
             document.getElementById('display-date').innerText = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
             document.getElementById('display-weekday').innerText = d.toLocaleDateString('ru-RU', { weekday: 'long' });
-            
             const dayNum = d.getDay();
             document.getElementById('quick-tue').className = `flex-1 py-4 rounded-xl transition-all ${dayNum === 2 ? 'tab-active' : 'text-white/40'}`;
             document.getElementById('quick-sun').className = `flex-1 py-4 rounded-xl transition-all ${dayNum === 0 ? 'tab-active' : 'text-white/40'}`;
-
             const list = document.getElementById('roles-list');
             list.innerHTML = '';
             const dayData = assignments[selectedDateStr] || {};
-
             mainRoles.forEach(role => list.appendChild(createRoleCard(role, dayData[role])));
-
             let showNextBV = true;
             backVocalRoles.forEach(role => {
                 const name = dayData[role];
@@ -153,57 +269,8 @@
             const card = document.createElement('div');
             card.className = `flex items-center justify-between p-5 rounded-[24px] transition-all border ${name ? 'glass-card border-white/10' : 'border-dashed border-white/5 opacity-40'}`;
             card.onclick = () => openModal(role);
-            card.innerHTML = `
-                <div class="flex items-center gap-5">
-                    <i data-lucide="${getIcon(role)}" class="w-5 h-5 ${name ? 'text-purple-500' : 'text-white/20'}"></i>
-                    <div>
-                        <p class="text-[8px] font-semibold text-white/30 uppercase tracking-[0.2em] mb-1">${role}</p>
-                        <p class="text-base font-light-text ${name ? 'text-white' : 'text-white/20 italic'}">${name || '—'}</p>
-                    </div>
-                </div>
-            `;
+            card.innerHTML = `<div class="flex items-center gap-5"><i data-lucide="${getIcon(role)}" class="w-5 h-5 ${name ? 'text-purple-500' : 'text-white/20'}"></i><div><p class="text-[8px] font-semibold text-white/30 uppercase tracking-[0.2em] mb-1">${role}</p><p class="text-base font-light-text ${name ? 'text-white' : 'text-white/20 italic'}">${name || '—'}</p></div></div>`;
             return card;
-        }
-
-        function renderCalendar() {
-            const body = document.getElementById('calendar-body');
-            const label = document.getElementById('calendar-month-year');
-            body.innerHTML = '';
-            
-            const year = calendarDate.getFullYear();
-            const month = calendarDate.getMonth();
-            label.innerText = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(calendarDate);
-
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            let shift = firstDay === 0 ? 6 : firstDay - 1;
-
-            for(let i=0; i<shift; i++) body.innerHTML += '<div></div>';
-            for(let d=1; d<=daysInMonth; d++) {
-                const dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
-                const dateObj = new Date(year, month, d);
-                const isService = (dateObj.getDay() === 2 || dateObj.getDay() === 0);
-                const hasData = assignments[dateStr] && Object.values(assignments[dateStr]).some(v => v);
-
-                const cell = document.createElement('div');
-                cell.className = `day-cell ${isService ? 'service-day-marker text-purple-400' : 'text-white/10'} ${selectedDateStr === dateStr ? 'day-active' : ''}`;
-                cell.innerHTML = `<span>${d}</span>${hasData ? '<div class="dot"></div>' : ''}`;
-                if(isService) cell.onclick = () => { selectedDateStr = dateStr; switchView('home'); };
-                body.appendChild(cell);
-            }
-            renderStats();
-        }
-
-        function switchView(view) {
-            ['view-home', 'view-plan', 'view-settings'].forEach(v => document.getElementById(v).classList.add('hidden'));
-            document.getElementById('view-' + view).classList.remove('hidden');
-            ['nav-home', 'nav-plan', 'nav-settings'].forEach(n => {
-                document.getElementById(n).className = `p-4 ${n === 'nav-'+view ? 'text-purple-500 scale-110' : 'text-white/20'}`;
-            });
-            if(view === 'home') renderSchedule();
-            if(view === 'plan') renderCalendar();
-            if(view === 'settings') renderTeamBase();
-            lucide.createIcons();
         }
 
         function openModal(role) {
@@ -212,7 +279,7 @@
             list.innerHTML = '';
             team.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
                 const b = document.createElement('button');
-                b.className = "w-full text-left p-5 rounded-2xl hover:bg-white/5 text-white/80 font-light-text border border-transparent hover:border-white/10 transition-all mb-1";
+                b.className = "w-full text-left p-5 rounded-2xl text-white/80 font-light-text border border-transparent mb-1";
                 b.innerText = p.name;
                 b.onclick = () => { assignPerson(p.name); closeModal(); };
                 list.appendChild(b);
@@ -223,49 +290,53 @@
         function assignPerson(name) {
             if(!assignments[selectedDateStr]) assignments[selectedDateStr] = {};
             assignments[selectedDateStr][currentRoleKey] = name;
-            save(); renderSchedule(); closeModal();
+            localStorage.setItem('wl_v9_assigns', JSON.stringify(assignments));
+            renderSchedule(); closeModal();
         }
 
         function addPerson() {
             const v = document.getElementById('new-name').value.trim();
             if(!v) return;
-            team.push({name:v}); save(); document.getElementById('new-name').value=''; renderTeamBase();
+            team.push({name:v}); localStorage.setItem('wl_v9_team', JSON.stringify(team));
+            document.getElementById('new-name').value=''; renderTeamBase();
         }
 
         function renderTeamBase() {
             const list = document.getElementById('team-list');
             list.innerHTML = '';
             team.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
-                list.innerHTML += `<div class="p-5 glass-card rounded-2xl mb-2 flex justify-between items-center font-light-text text-sm">
-                    <span>${p.name}</span><button onclick="removeMember('${p.name}')" class="text-white/10 hover:text-red-500"><i data-lucide="x" class="w-4 h-4"></i></button>
-                </div>`;
+                list.innerHTML += `<div class="p-5 glass-card rounded-2xl mb-2 flex justify-between items-center font-light-text text-sm"><span>${p.name}</span><button onclick="removeMember('${p.name}')" class="text-white/10"><i data-lucide="x" class="w-4 h-4"></i></button></div>`;
             });
             lucide.createIcons();
         }
 
-        function renderStats() {
-            const list = document.getElementById('stats-list');
-            list.innerHTML = '';
-            const counts = {};
-            team.forEach(p => counts[p.name] = 0);
-            Object.values(assignments).forEach(day => {
-                Object.values(day).forEach(name => { if(name && counts[name] !== undefined) counts[name]++; });
-            });
-            Object.entries(counts).filter(e => e[1] > 0).sort((a,b) => b[1]-a[1]).forEach(([n, c]) => {
-                list.innerHTML += `<div class="flex justify-between items-center text-[11px] tracking-widest uppercase font-light-text text-white/40">
-                    <span>${n}</span><span class="text-purple-500">${c} СЛУЖЕНИЙ</span>
-                </div>`;
-            });
+        function renderCalendar() {
+            const body = document.getElementById('calendar-body');
+            const label = document.getElementById('calendar-month-year');
+            body.innerHTML = '';
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            label.innerText = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(calendarDate);
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let shift = firstDay === 0 ? 6 : firstDay - 1;
+            for(let i=0; i<shift; i++) body.innerHTML += '<div></div>';
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
+                const dateObj = new Date(year, month, d);
+                const isService = (dateObj.getDay() === 2 || dateObj.getDay() === 0);
+                const cell = document.createElement('div');
+                cell.className = `day-cell ${isService ? 'service-day-marker text-purple-400' : 'text-white/10'} ${selectedDateStr === dateStr ? 'day-active' : ''}`;
+                cell.innerHTML = `<span>${d}</span>`;
+                if(isService) cell.onclick = () => { selectedDateStr = dateStr; switchView('home'); };
+                body.appendChild(cell);
+            }
         }
 
-        function changeMonth(dir) { calendarDate.setMonth(calendarDate.getMonth() + dir); renderCalendar(); }
-        function removeMember(n) { if(confirm('Удалить из команды?')) { team = team.filter(p=>p.name!==n); save(); renderTeamBase(); } }
+        function removeMember(n) { if(confirm('Удалить?')) { team = team.filter(p=>p.name!==n); localStorage.setItem('wl_v9_team', JSON.stringify(team)); renderTeamBase(); } }
         function closeModal() { document.getElementById('selection-modal').classList.add('hidden'); }
-        function save() { localStorage.setItem('wl_v8_team', JSON.stringify(team)); localStorage.setItem('wl_v8_assigns', JSON.stringify(assignments)); }
-        function getIcon(r) {
-            const m = {"Ведущий":"mic","Бэк-вокал":"mic-2","Фоно":"piano","Барабаны":"drum","Гитара":"guitar"};
-            return m[r.split(' ')[0]] || "music";
-        }
+        function getIcon(r) { return {"Ведущий":"mic","Бэк-вокал":"mic-2","Фоно":"piano","Барабаны":"drum","Гитара":"guitar"}[r.split(' ')[0]] || "music"; }
+        function changeMonth(dir) { calendarDate.setMonth(calendarDate.getMonth() + dir); renderCalendar(); }
 
         initApp();
     </script>
