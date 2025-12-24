@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WORSHIP — LIFE</title>
+    <title>WORSHIP — LIFE | PRO</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,171 +12,235 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #080808; color: white; -webkit-tap-highlight-color: transparent; }
-        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); backdrop-filter: blur(15px); }
-        .tab-active { background: #8B5CF6; box-shadow: 0 4px 25px rgba(139, 92, 246, 0.4); border-color: rgba(255,255,255,0.2); }
-        .input-field { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); outline: none; }
+        .font-thin-text { font-weight: 200; }
+        .font-light-text { font-weight: 300; }
+        .glass-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); }
+        .tab-active { background: #8B5CF6; color: white !important; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2); }
         .hidden { display: none; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .day-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 12px; font-weight: 600; position: relative; }
-        .day-active { background: #8B5CF6 !important; color: white; }
-        .dot { width: 4px; height: 4px; background: #8B5CF6; border-radius: 50%; position: absolute; bottom: 4px; }
-        .modal-bg { background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); }
-        
-        /* Анимация появления новых слотов */
-        .fade-in-slot { animation: slideDown 0.3s ease-out; }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .day-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 14px; font-size: 13px; font-weight: 300; transition: 0.3s; cursor: pointer; }
+        .day-active { background: white !important; color: black !important; font-weight: 600; }
+        .service-day-marker { border: 1px solid rgba(139, 92, 246, 0.5); }
+        .dot { width: 3px; height: 3px; background: #8B5CF6; border-radius: 50%; position: absolute; bottom: 6px; }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="pb-32">
 
-    <div class="max-w-md mx-auto px-6 pt-10">
-        <div id="view-home">
-            <header class="flex items-center justify-between mb-10">
-                <h1 class="text-2xl font-black tracking-tighter uppercase italic">WORSHIP<span class="text-purple-500">—</span>LIFE</h1>
-                <div class="w-8 h-8 rounded-lg glass-card flex items-center justify-center">
-                    <i data-lucide="music" class="w-4 h-4 text-purple-400"></i>
-                </div>
+    <div class="max-w-md mx-auto px-8 pt-12">
+        <div id="view-home" class="fade-in">
+            <header class="mb-12">
+                <h1 class="text-xl font-thin-text tracking-[0.4em] uppercase text-white/90">WORSHIP<span class="text-purple-500 italic"> — </span>LIFE</h1>
             </header>
 
-            <div class="mb-8">
-                <h2 id="display-date" class="text-4xl font-black tracking-tighter italic uppercase">Дата</h2>
-                <p id="display-weekday" class="text-neutral-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">День недели</p>
+            <div class="flex p-1 bg-white/5 rounded-2xl mb-12 border border-white/5 text-[10px] font-light-text tracking-[0.2em] uppercase">
+                <button onclick="selectQuickDay(2)" id="quick-tue" class="flex-1 py-4 rounded-xl transition-all text-white/40">Вторник</button>
+                <button onclick="selectQuickDay(0)" id="quick-sun" class="flex-1 py-4 rounded-xl transition-all text-white/40">Воскресенье</button>
             </div>
 
-            <div id="roles-list" class="space-y-3">
-                </div>
+            <div class="mb-10">
+                <h2 id="display-date" class="text-5xl font-thin-text tracking-tighter text-white leading-tight">Дата</h2>
+                <p id="display-weekday" class="text-purple-500 text-[10px] font-semibold uppercase tracking-[0.5em] mt-3 opacity-80">День недели</p>
+            </div>
+
+            <div id="roles-list" class="space-y-4"></div>
         </div>
 
-        <div id="view-plan" class="hidden">
-            <h2 class="text-3xl font-black mb-6 tracking-tighter italic uppercase">Месяц</h2>
-            <div class="glass-card p-5 rounded-[32px] mb-8">
+        <div id="view-plan" class="hidden fade-in">
+            <h2 class="text-4xl font-thin-text mb-8 tracking-tighter uppercase">График</h2>
+            <div class="glass-card p-6 rounded-[32px] mb-8">
+                <div class="flex justify-between items-center mb-8">
+                    <button onclick="changeMonth(-1)" class="p-2"><i data-lucide="chevron-left" class="w-5 h-5 text-purple-500"></i></button>
+                    <span id="calendar-month-year" class="text-xs font-semibold uppercase tracking-[0.3em] text-white"></span>
+                    <button onclick="changeMonth(1)" class="p-2"><i data-lucide="chevron-right" class="w-5 h-5 text-purple-500"></i></button>
+                </div>
+                <div class="calendar-grid text-[9px] font-semibold text-white/20 mb-4 uppercase text-center tracking-widest">
+                    <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+                </div>
                 <div id="calendar-body" class="calendar-grid"></div>
             </div>
-            <div class="glass-card p-6 rounded-[32px]">
-                <h3 class="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-4 italic">Нагрузка команды</h3>
-                <div id="stats-list" class="space-y-4 text-sm font-bold"></div>
-            </div>
+            <div id="stats-list" class="space-y-4 px-2"></div>
         </div>
 
-        <div id="view-settings" class="hidden">
-            <h2 class="text-3xl font-black mb-6 tracking-tighter italic uppercase">Состав</h2>
+        <div id="view-settings" class="hidden fade-in">
+            <h2 class="text-4xl font-thin-text mb-8 tracking-tighter uppercase">Команда</h2>
             <div class="glass-card p-6 rounded-[30px] mb-8">
-                <input type="text" id="new-name" placeholder="Имя Фамилия" class="input-field w-full p-4 rounded-xl text-white mb-3 text-sm font-bold">
-                <button onclick="addPerson()" class="w-full bg-white text-black py-4 rounded-xl font-black uppercase text-[10px] tracking-widest">Добавить</button>
+                <input type="text" id="new-name" placeholder="Имя Фамилия" class="bg-transparent w-full p-2 text-xl font-light-text text-white mb-6 outline-none border-b border-white/10 focus:border-purple-500 transition-all">
+                <button onclick="addPerson()" class="w-full py-4 text-[10px] font-semibold uppercase tracking-[0.3em] text-purple-400 border border-purple-500/30 rounded-xl active:bg-purple-500 active:text-white transition-all">Добавить в базу</button>
             </div>
-            <div id="team-list" class="space-y-2"></div>
+            <div id="team-list" class="space-y-3"></div>
         </div>
     </div>
 
     <div id="selection-modal" class="fixed inset-0 z-[100] modal-bg flex items-end hidden">
-        <div class="w-full max-w-md mx-auto bg-neutral-900 rounded-t-[40px] p-8 border-t border-white/10 shadow-2xl">
-            <div class="w-12 h-1.5 bg-neutral-800 rounded-full mx-auto mb-8"></div>
-            <div id="modal-people-list" class="space-y-2 max-h-[50vh] overflow-y-auto pr-2"></div>
-            <button onclick="assignPerson(null)" class="w-full mt-6 p-4 rounded-2xl border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest active:bg-red-500/10 transition-all">Удалить участника</button>
-            <button onclick="closeModal()" class="w-full mt-2 p-4 text-neutral-500 text-[10px] font-black uppercase">Отмена</button>
+        <div class="w-full max-w-md mx-auto bg-[#080808] rounded-t-[40px] p-10 border-t border-white/5 shadow-2xl">
+            <div class="w-10 h-0.5 bg-white/10 mx-auto mb-10"></div>
+            <div id="modal-people-list" class="space-y-2 max-h-[50vh] overflow-y-auto"></div>
+            <button onclick="assignPerson(null)" class="w-full mt-8 p-4 text-[10px] font-semibold uppercase tracking-widest text-red-400/50">Удалить из роли</button>
+            <button onclick="closeModal()" class="w-full mt-2 p-4 text-[10px] font-semibold uppercase tracking-widest text-white/20">Закрыть</button>
         </div>
     </div>
 
-    <div class="fixed bottom-8 left-6 right-6 glass-card rounded-[32px] p-2 flex justify-around items-center z-50">
-        <button onclick="switchView('home')" id="nav-home" class="p-4 text-purple-500"><i data-lucide="layout-grid"></i></button>
-        <button onclick="switchView('plan')" id="nav-plan" class="p-4 text-neutral-500"><i data-lucide="calendar-days"></i></button>
-        <button onclick="switchView('settings')" id="nav-settings" class="p-4 text-neutral-500"><i data-lucide="users"></i></button>
+    <div class="fixed bottom-10 left-8 right-8 glass-card rounded-[35px] p-3 flex justify-around items-center z-50">
+        <button onclick="switchView('home')" id="nav-home" class="p-4 transition-all"><i data-lucide="layers"></i></button>
+        <button onclick="switchView('plan')" id="nav-plan" class="p-4 transition-all"><i data-lucide="calendar"></i></button>
+        <button onclick="switchView('settings')" id="nav-settings" class="p-4 transition-all"><i data-lucide="user-plus"></i></button>
     </div>
 
     <script>
-        // ЛОКАЛЬНОЕ ХРАНИЛИЩЕ
-        let team = JSON.parse(localStorage.getItem('wl_local_team')) || [];
-        let assignments = JSON.parse(localStorage.getItem('wl_local_assigns')) || {};
-        let selectedDate = new Date().toISOString().split('T')[0];
+        let team = JSON.parse(localStorage.getItem('wl_v8_team')) || [];
+        let assignments = JSON.parse(localStorage.getItem('wl_v8_assigns')) || {};
+        let calendarDate = new Date();
+        let selectedDateStr = "";
 
         const mainRoles = ["Ведущий", "Фоно", "Барабаны", "Гитара"];
         const backVocalRoles = ["Бэк-вокал 1", "Бэк-вокал 2", "Бэк-вокал 3", "Бэк-вокал 4"];
 
+        function initApp() {
+            lucide.createIcons();
+            // По умолчанию выбираем ближайший Вт или Вс
+            const today = new Date();
+            const day = today.getDay();
+            selectQuickDay(day === 0 || day > 2 ? 0 : 2);
+            switchView('home');
+        }
+
+        function selectQuickDay(targetDayNum) {
+            const now = new Date();
+            let diff = targetDayNum - now.getDay();
+            if (diff < 0) diff += 7;
+            const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
+            
+            // Баг фикс: создаем строку даты вручную, чтобы избежать проблем с таймзоной
+            selectedDateStr = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const parts = selectedDateStr.split('-');
+            const d = new Date(parts[0], parts[1] - 1, parts[2]);
+            
+            document.getElementById('display-date').innerText = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+            document.getElementById('display-weekday').innerText = d.toLocaleDateString('ru-RU', { weekday: 'long' });
+            
+            const dayNum = d.getDay();
+            document.getElementById('quick-tue').className = `flex-1 py-4 rounded-xl transition-all ${dayNum === 2 ? 'tab-active' : 'text-white/40'}`;
+            document.getElementById('quick-sun').className = `flex-1 py-4 rounded-xl transition-all ${dayNum === 0 ? 'tab-active' : 'text-white/40'}`;
+
+            const list = document.getElementById('roles-list');
+            list.innerHTML = '';
+            const dayData = assignments[selectedDateStr] || {};
+
+            mainRoles.forEach(role => list.appendChild(createRoleCard(role, dayData[role])));
+
+            let showNextBV = true;
+            backVocalRoles.forEach(role => {
+                const name = dayData[role];
+                if (name || showNextBV) {
+                    list.appendChild(createRoleCard(role, name, true));
+                    if (!name) showNextBV = false;
+                }
+            });
+            lucide.createIcons();
+        }
+
+        function createRoleCard(role, name, isBV = false) {
+            const card = document.createElement('div');
+            card.className = `flex items-center justify-between p-5 rounded-[24px] transition-all border ${name ? 'glass-card border-white/10' : 'border-dashed border-white/5 opacity-40'}`;
+            card.onclick = () => openModal(role);
+            card.innerHTML = `
+                <div class="flex items-center gap-5">
+                    <i data-lucide="${getIcon(role)}" class="w-5 h-5 ${name ? 'text-purple-500' : 'text-white/20'}"></i>
+                    <div>
+                        <p class="text-[8px] font-semibold text-white/30 uppercase tracking-[0.2em] mb-1">${role}</p>
+                        <p class="text-base font-light-text ${name ? 'text-white' : 'text-white/20 italic'}">${name || '—'}</p>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function renderCalendar() {
+            const body = document.getElementById('calendar-body');
+            const label = document.getElementById('calendar-month-year');
+            body.innerHTML = '';
+            
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            label.innerText = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(calendarDate);
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let shift = firstDay === 0 ? 6 : firstDay - 1;
+
+            for(let i=0; i<shift; i++) body.innerHTML += '<div></div>';
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
+                const dateObj = new Date(year, month, d);
+                const isService = (dateObj.getDay() === 2 || dateObj.getDay() === 0);
+                const hasData = assignments[dateStr] && Object.values(assignments[dateStr]).some(v => v);
+
+                const cell = document.createElement('div');
+                cell.className = `day-cell ${isService ? 'service-day-marker text-purple-400' : 'text-white/10'} ${selectedDateStr === dateStr ? 'day-active' : ''}`;
+                cell.innerHTML = `<span>${d}</span>${hasData ? '<div class="dot"></div>' : ''}`;
+                if(isService) cell.onclick = () => { selectedDateStr = dateStr; switchView('home'); };
+                body.appendChild(cell);
+            }
+            renderStats();
+        }
+
         function switchView(view) {
             ['view-home', 'view-plan', 'view-settings'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById('view-' + view).classList.remove('hidden');
-            
             ['nav-home', 'nav-plan', 'nav-settings'].forEach(n => {
-                document.getElementById(n).className = `p-4 ${n === 'nav-'+view ? 'text-purple-500' : 'text-neutral-500'}`;
+                document.getElementById(n).className = `p-4 ${n === 'nav-'+view ? 'text-purple-500 scale-110' : 'text-white/20'}`;
             });
-
             if(view === 'home') renderSchedule();
             if(view === 'plan') renderCalendar();
             if(view === 'settings') renderTeamBase();
             lucide.createIcons();
         }
 
-        function renderSchedule() {
-            const d = new Date(selectedDate);
-            document.getElementById('display-date').innerText = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-            document.getElementById('display-weekday').innerText = d.toLocaleDateString('ru-RU', { weekday: 'long' });
-            
-            const list = document.getElementById('roles-list');
+        function openModal(role) {
+            currentRoleKey = role;
+            const list = document.getElementById('modal-people-list');
             list.innerHTML = '';
-            const dayData = assignments[selectedDate] || {};
-
-            // 1. Рендерим основные роли
-            mainRoles.forEach(role => list.appendChild(createRoleCard(role, dayData[role])));
-
-            // 2. Умный рендер бэк-вокала
-            let showNextBackVocal = true;
-            backVocalRoles.forEach((role, index) => {
-                const name = dayData[role];
-                if (name || showNextBackVocal) {
-                    const card = createRoleCard(role, name, true);
-                    card.classList.add('fade-in-slot');
-                    list.appendChild(card);
-                    // Если этот слот пустой, больше слотов бэк-вокала не показываем
-                    if (!name) showNextBackVocal = false;
-                }
+            team.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                const b = document.createElement('button');
+                b.className = "w-full text-left p-5 rounded-2xl hover:bg-white/5 text-white/80 font-light-text border border-transparent hover:border-white/10 transition-all mb-1";
+                b.innerText = p.name;
+                b.onclick = () => { assignPerson(p.name); closeModal(); };
+                list.appendChild(b);
             });
+            document.getElementById('selection-modal').classList.remove('hidden');
+        }
 
+        function assignPerson(name) {
+            if(!assignments[selectedDateStr]) assignments[selectedDateStr] = {};
+            assignments[selectedDateStr][currentRoleKey] = name;
+            save(); renderSchedule(); closeModal();
+        }
+
+        function addPerson() {
+            const v = document.getElementById('new-name').value.trim();
+            if(!v) return;
+            team.push({name:v}); save(); document.getElementById('new-name').value=''; renderTeamBase();
+        }
+
+        function renderTeamBase() {
+            const list = document.getElementById('team-list');
+            list.innerHTML = '';
+            team.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                list.innerHTML += `<div class="p-5 glass-card rounded-2xl mb-2 flex justify-between items-center font-light-text text-sm">
+                    <span>${p.name}</span><button onclick="removeMember('${p.name}')" class="text-white/10 hover:text-red-500"><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>`;
+            });
             lucide.createIcons();
-        }
-
-        function createRoleCard(role, name, isBackVocal = false) {
-            const card = document.createElement('div');
-            card.className = `flex items-center justify-between transition-all cursor-pointer border rounded-[26px] 
-                              ${isBackVocal ? 'p-3.5 px-6 opacity-90 text-sm' : 'p-5'} 
-                              ${name ? 'glass-card border-purple-500/20 shadow-lg shadow-purple-500/5' : 'border-neutral-900 border-dashed opacity-30'}`;
-            
-            card.onclick = () => openModal(role);
-            card.innerHTML = `
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center ${name ? 'bg-purple-600 text-white' : 'bg-neutral-900 text-neutral-700'}">
-                        <i data-lucide="${getIcon(role)}" class="${isBackVocal ? 'w-4 h-4' : 'w-5 h-5'}"></i>
-                    </div>
-                    <div>
-                        <p class="text-[9px] font-black text-neutral-500 uppercase tracking-widest">${role}</p>
-                        <p class="font-bold ${name ? 'text-white' : 'text-neutral-800 italic'}">${name || 'Добавить...'}</p>
-                    </div>
-                </div>
-                ${name ? '<div class="w-1.5 h-1.5 rounded-full bg-purple-500"></div>' : ''}
-            `;
-            return card;
-        }
-
-        // Остальная логика (Календарь, Команда)
-        function renderCalendar() {
-            const body = document.getElementById('calendar-body');
-            body.innerHTML = '';
-            for(let d=1; d<=31; d++) {
-                const dateStr = `2025-01-${d.toString().padStart(2, '0')}`;
-                const hasAssign = assignments[dateStr] && Object.values(assignments[dateStr]).some(v => v);
-                const cell = document.createElement('div');
-                cell.className = `day-cell ${selectedDate === dateStr ? 'day-active' : 'glass-card text-neutral-500'}`;
-                cell.innerHTML = `<span>${d}</span>${hasAssign ? '<div class="dot"></div>' : ''}`;
-                cell.onclick = () => { selectedDate = dateStr; switchView('home'); };
-                body.appendChild(cell);
-            }
-            renderStats();
         }
 
         function renderStats() {
@@ -187,69 +251,23 @@
             Object.values(assignments).forEach(day => {
                 Object.values(day).forEach(name => { if(name && counts[name] !== undefined) counts[name]++; });
             });
-            Object.entries(counts).sort((a,b) => b[1]-a[1]).forEach(([n, c]) => {
-                if(c > 0) list.innerHTML += `<div class="flex justify-between"><span>${n}</span><span class="text-purple-500">${c}</span></div>`;
+            Object.entries(counts).filter(e => e[1] > 0).sort((a,b) => b[1]-a[1]).forEach(([n, c]) => {
+                list.innerHTML += `<div class="flex justify-between items-center text-[11px] tracking-widest uppercase font-light-text text-white/40">
+                    <span>${n}</span><span class="text-purple-500">${c} СЛУЖЕНИЙ</span>
+                </div>`;
             });
         }
 
-        function addPerson() {
-            const val = document.getElementById('new-name').value.trim();
-            if(val) { team.push({name: val}); save(); document.getElementById('new-name').value = ''; renderTeamBase(); }
-        }
-
-        function renderTeamBase() {
-            const list = document.getElementById('team-list');
-            list.innerHTML = '';
-            team.forEach(p => {
-                const d = document.createElement('div');
-                d.className = "p-4 glass-card rounded-2xl mb-2 flex justify-between items-center font-bold text-sm";
-                d.innerHTML = `<span>${p.name}</span><button onclick="removeTeamMember('${p.name}')" class="text-neutral-700"><i data-lucide="x" class="w-4 h-4"></i></button>`;
-                list.appendChild(d);
-            });
-            lucide.createIcons();
-        }
-
-        function removeTeamMember(name) {
-            team = team.filter(p => p.name !== name);
-            save();
-            renderTeamBase();
-        }
-
-        let currentRoleKey = '';
-        function openModal(role) {
-            currentRoleKey = role;
-            const list = document.getElementById('modal-people-list');
-            list.innerHTML = '';
-            team.forEach(p => {
-                const b = document.createElement('button');
-                b.className = "w-full text-left p-5 rounded-2xl bg-neutral-800/50 border border-white/5 font-bold mb-2 active:bg-purple-600";
-                b.innerText = p.name;
-                b.onclick = () => { assignPerson(p.name); closeModal(); };
-                list.appendChild(b);
-            });
-            document.getElementById('selection-modal').classList.remove('hidden');
-            lucide.createIcons();
-        }
-
-        function assignPerson(name) {
-            if(!assignments[selectedDate]) assignments[selectedDate] = {};
-            assignments[selectedDate][currentRoleKey] = name;
-            save();
-            renderSchedule();
-            closeModal();
-        }
-
+        function changeMonth(dir) { calendarDate.setMonth(calendarDate.getMonth() + dir); renderCalendar(); }
+        function removeMember(n) { if(confirm('Удалить из команды?')) { team = team.filter(p=>p.name!==n); save(); renderTeamBase(); } }
         function closeModal() { document.getElementById('selection-modal').classList.add('hidden'); }
-        function save() { 
-            localStorage.setItem('wl_local_team', JSON.stringify(team)); 
-            localStorage.setItem('wl_local_assigns', JSON.stringify(assignments)); 
-        }
+        function save() { localStorage.setItem('wl_v8_team', JSON.stringify(team)); localStorage.setItem('wl_v8_assigns', JSON.stringify(assignments)); }
         function getIcon(r) {
             const m = {"Ведущий":"mic","Бэк-вокал":"mic-2","Фоно":"piano","Барабаны":"drum","Гитара":"guitar"};
             return m[r.split(' ')[0]] || "music";
         }
 
-        switchView('home');
+        initApp();
     </script>
 </body>
 </html>
