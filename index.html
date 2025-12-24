@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm - Состав команды</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0c0c0c; color: white; -webkit-tap-highlight-color: transparent; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); }
+        .tab-active { background: #8B5CF6; color: white; box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4); }
+        .input-field { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); outline: none; }
+        .hidden { display: none; }
+        .modal-bg { background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
+        /* Кастомный скролл */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    </style>
+</head>
+<body class="pb-28">
+
+    <div class="max-w-md mx-auto px-6 pt-10">
+        
+        <div id="view-home">
+            <header class="flex items-center justify-between mb-8">
+                <h1 class="text-3xl font-extrabold italic tracking-tighter">RHYTHM<span class="text-purple-500">.</span></h1>
+                <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-neutral-900">
+                    <i data-lucide="music" class="w-5 h-5 text-purple-400"></i>
+                </div>
+            </header>
+
+            <div class="flex p-1.5 bg-neutral-900 rounded-2xl mb-8 border border-white/5 font-bold text-[11px]">
+                <button onclick="changeDay('tue')" id="btn-tue" class="flex-1 py-3 rounded-xl transition-all tab-active uppercase">Вторник</button>
+                <button onclick="changeDay('sun')" id="btn-sun" class="flex-1 py-3 rounded-xl transition-all text-neutral-500 uppercase">Воскресенье</button>
+            </div>
+
+            <div class="mb-6">
+                <p id="label-day" class="text-purple-500 text-[10px] font-black tracking-[0.2em] uppercase mb-1">Состав на</p>
+                <h2 id="display-date" class="text-4xl font-extrabold tracking-tighter">6 Января</h2>
+            </div>
+
+            <div id="roles-list" class="space-y-3">
+                </div>
+        </div>
+
+        <div id="view-settings" class="hidden">
+            <h2 class="text-3xl font-extrabold mb-2 tracking-tighter">Команда</h2>
+            <p class="text-neutral-500 text-sm mb-8">Общий список участников группы</p>
+
+            <div class="glass-card p-6 rounded-[28px] mb-8 border-purple-500/20">
+                <input type="text" id="new-name" placeholder="Имя Фамилия" class="input-field w-full p-4 rounded-xl text-white font-medium mb-3">
+                <button onclick="addPerson()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-4 rounded-xl font-black uppercase text-[11px] tracking-widest transition-all active:scale-95">
+                    Добавить в базу
+                </button>
+            </div>
+
+            <div id="team-list" class="space-y-2">
+                </div>
+        </div>
+    </div>
+
+    <div id="selection-modal" class="fixed inset-0 z-[100] modal-bg flex items-end hidden">
+        <div class="w-full max-w-md mx-auto bg-neutral-900 rounded-t-[40px] p-8 shadow-2xl border-t border-white/10 animate-in slide-in-from-bottom duration-300">
+            <div class="w-12 h-1.5 bg-neutral-800 rounded-full mx-auto mb-6"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modal-title" class="text-xl font-bold">Выбрать участника</h3>
+                <button onclick="closeModal()" class="w-10 h-10 flex items-center justify-center bg-neutral-800 rounded-full text-neutral-400">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="modal-people-list" class="space-y-2 max-h-[45vh] overflow-y-auto pr-2">
+                </div>
+            <button onclick="assignPerson(null)" class="w-full mt-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-black uppercase tracking-widest">
+                Освободить позицию
+            </button>
+        </div>
+    </div>
+
+    <div class="fixed bottom-8 left-6 right-6 glass-card rounded-[28px] p-2 flex justify-around items-center shadow-2xl z-50">
+        <button onclick="switchView('home')" id="nav-home" class="p-4 text-purple-500 transition-all"><i data-lucide="calendar"></i></button>
+        <button onclick="switchView('settings')" id="nav-settings" class="p-4 text-neutral-500 transition-all"><i data-lucide="users"></i></button>
+    </div>
+
+    <script>
+        // ДАННЫЕ
+        let team = JSON.parse(localStorage.getItem('rhythm_team_v3')) || [];
+        let assignments = JSON.parse(localStorage.getItem('rhythm_assigns_v3')) || {
+            tue: {},
+            sun: {}
+        };
+
+        let currentDay = 'tue';
+        let currentRoleKey = ''; // Ключ для сохранения (напр. "Бэк-вокал 2")
+
+        // Список всех ролей (бэк-вокал теперь до 4-х)
+        const rolesConfig = [
+            "Ведущий",
+            "Бэк-вокал 1",
+            "Бэк-вокал 2",
+            "Бэк-вокал 3",
+            "Бэк-вокал 4",
+            "Фоно",
+            "Барабаны",
+            "Гитара"
+        ];
+
+        function switchView(view) {
+            document.getElementById('view-home').classList.toggle('hidden', view !== 'home');
+            document.getElementById('view-settings').classList.toggle('hidden', view !== 'settings');
+            document.getElementById('nav-home').className = `p-4 ${view === 'home' ? 'text-purple-500' : 'text-neutral-500'}`;
+            document.getElementById('nav-settings').className = `p-4 ${view === 'settings' ? 'text-purple-500' : 'text-neutral-500'}`;
+            if(view === 'settings') renderTeamBase();
+            if(view === 'home') renderSchedule();
+        }
+
+        function addPerson() {
+            const input = document.getElementById('new-name');
+            if(!input.value.trim()) return;
+            team.push({ id: Date.now(), name: input.value.trim() });
+            save();
+            input.value = '';
+            renderTeamBase();
+        }
+
+        function deletePerson(id) {
+            team = team.filter(p => p.id !== id);
+            save();
+            renderTeamBase();
+        }
+
+        function renderTeamBase() {
+            const list = document.getElementById('team-list');
+            list.innerHTML = '<p class="text-[10px] font-black text-neutral-600 uppercase tracking-widest px-2 mb-3 italic">Участники в базе</p>';
+            team.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                const d = document.createElement('div');
+                d.className = "flex justify-between items-center p-4 glass-card rounded-2xl mb-2 border-white/5";
+                d.innerHTML = `<span class="font-semibold text-sm">${p.name}</span>
+                               <button onclick="deletePerson(${p.id})" class="text-neutral-700 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`;
+                list.appendChild(d);
+            });
+            lucide.createIcons();
+        }
+
+        function changeDay(day) {
+            currentDay = day;
+            document.getElementById('btn-tue').className = `flex-1 py-3 rounded-xl transition-all ${day === 'tue' ? 'tab-active' : 'text-neutral-500'}`;
+            document.getElementById('btn-sun').className = `flex-1 py-3 rounded-xl transition-all ${day === 'sun' ? 'tab-active' : 'text-neutral-500'}`;
+            document.getElementById('display-date').innerText = day === 'tue' ? "6 Января" : "4 Января";
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const list = document.getElementById('roles-list');
+            list.innerHTML = '';
+            
+            rolesConfig.forEach(role => {
+                const name = assignments[currentDay][role];
+                const isBackVocal = role.includes("Бэк-вокал");
+                
+                const card = document.createElement('div');
+                card.onclick = () => openSelection(role);
+                
+                // Стилизация: бэк-вокалисты чуть компактнее
+                card.className = `flex items-center justify-between transition-all cursor-pointer border rounded-[22px] 
+                                  ${isBackVocal ? 'p-3 px-5 opacity-90' : 'p-5'} 
+                                  ${name ? 'glass-card border-white/10' : 'border-dashed border-neutral-800 opacity-40'}`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center ${name ? 'bg-purple-500/10 text-purple-400' : 'text-neutral-700'}">
+                            <i data-lucide="${getIcon(role)}" class="${isBackVocal ? 'w-4 h-4' : 'w-5 h-5'}"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-neutral-500 uppercase tracking-widest">${role}</p>
+                            <p class="text-sm font-bold ${name ? 'text-white' : 'text-neutral-700 italic'}">${name || '—'}</p>
+                        </div>
+                    </div>
+                    ${name ? '<i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>' : '<i data-lucide="plus" class="w-4 h-4 text-neutral-800"></i>'}
+                `;
+                list.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function openSelection(role) {
+            currentRoleKey = role;
+            document.getElementById('modal-title').innerText = role;
+            const modal = document.getElementById('selection-modal');
+            const list = document.getElementById('modal-people-list');
+            list.innerHTML = '';
+            
+            if(team.length === 0) {
+                list.innerHTML = '<div class="text-center py-10 text-neutral-500 font-medium">Сначала добавьте людей в настройки</div>';
+            }
+
+            team.forEach(p => {
+                const b = document.createElement('button');
+                b.className = "w-full text-left p-5 rounded-2xl bg-neutral-800/50 hover:bg-purple-600 transition-all font-bold text-sm mb-1";
+                b.innerText = p.name;
+                b.onclick = () => { assignPerson(p.name); closeModal(); };
+                list.appendChild(b);
+            });
+            
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('selection-modal').classList.add('hidden');
+        }
+
+        function assignPerson(name) {
+            assignments[currentDay][currentRoleKey] = name;
+            save();
+            renderSchedule();
+            closeModal();
+        }
+
+        function save() {
+            localStorage.setItem('rhythm_team_v3', JSON.stringify(team));
+            localStorage.setItem('rhythm_assigns_v3', JSON.stringify(assignments));
+        }
+
+        function getIcon(r) {
+            if(r.includes("Ведущий")) return "mic";
+            if(r.includes("Бэк-вокал")) return "mic-2";
+            if(r.includes("Фоно")) return "piano";
+            if(r.includes("Барабаны")) return "drum";
+            return "guitar";
+        }
+
+        // ИНИЦИАЛИЗАЦИЯ
+        switchView('home');
+        changeDay('tue');
+    </script>
+</body>
+</html>
